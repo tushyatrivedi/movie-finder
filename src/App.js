@@ -50,8 +50,7 @@ const tempWatchedData = [
 const average = (arr) =>
   arr.length === 0 ? 0 : arr.reduce((acc, cur) => acc + cur / arr.length, 0);
 
-function Navbar({ movies }) {
-  const [query, setQuery] = useState("");
+function Navbar({ count, query, onSearch }) {
   return (
     <nav className="nav-bar">
       <Logo />
@@ -60,10 +59,10 @@ function Navbar({ movies }) {
         type="text"
         placeholder="Search movies..."
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => onSearch(e.target.value)}
       />
       <p className="num-results">
-        Found <strong>{movies.length}</strong> results
+        Found <strong>{count}</strong> results
       </p>
     </nav>
   );
@@ -172,40 +171,53 @@ function WatchSummary({ watched }) {
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(tempWatchedData);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null); // use null instead of ""
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
+    let ignore = false;
     async function getMovies() {
       try {
+        setIsLoading(true);
+        setErrorMsg("");
+
         const response = await fetch(
-          "https://www.omdbapi.com/?apikey=d36b3136&s=inception",
+          `https://www.omdbapi.com/?apikey=d36b3136&s=${query}`,
         );
+        if (!ignore) {
+          if (!response.ok)
+            throw new Error("Error occurred while fetching data!");
 
-        if (!response.ok)
-          throw new Error("Error occurred while fetching data!");
+          const data = await response.json();
+          console.log(data);
+          if (data.Response === "False") throw new Error(data.Error);
 
-        const data = await response.json();
-        console.log(data);
-        if (data.Error === "Movie not found!")
-          throw new Error("Movie not found!");
-
-        setIsLoading(false);
-        setMovies(data.Search);
+          setIsLoading(false);
+          setMovies(data.Search);
+        }
       } catch (err) {
         console.log(err);
         setErrorMsg(err.message); // always store a string
+        setMovies([]); //after getting error, clear previous list
       } finally {
         setIsLoading(false);
       }
     }
-
+    if (query.length < 3) {
+      setMovies([]);
+      setErrorMsg("");
+      return;
+    }
     getMovies();
-  }, []);
+    return () => {
+      ignore = true;
+    };
+  }, [query]);
 
   return (
     <>
-      <Navbar movies={movies} />
+      <Navbar count={movies.length} query={query} onSearch={setQuery} />
       <main className="main">
         <Box>
           {errorMsg && <ErrorMessage message={errorMsg} />}
