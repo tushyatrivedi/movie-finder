@@ -154,7 +154,7 @@ function MovieDetails({ id, onBack, onAdd, watched }) {
   );
 }
 
-function WatchedList({ watched }) {
+function WatchedList({ watched, onRemove }) {
   return (
     <ul className="list">
       {watched.map((movie) => (
@@ -173,6 +173,14 @@ function WatchedList({ watched }) {
             <p>
               <span>⏳</span>
               <span>{movie.Runtime.split(" ")[0]} min</span>
+            </p>
+            <p
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                onRemove(movie.imdbID);
+              }}
+            >
+              <span>⛔</span>
             </p>
           </div>
         </li>
@@ -248,6 +256,11 @@ export default function App() {
     ]);
   }
 
+  function removeWatched(id) {
+    let list = watched.filter((x) => x.imdbID !== id);
+    setWatched(list);
+  }
+
   useEffect(() => {
     let ignore = false;
     async function getMovies() {
@@ -309,7 +322,7 @@ export default function App() {
             <>
               {" "}
               <WatchSummary watched={watched} />
-              <WatchedList watched={watched} />
+              <WatchedList watched={watched} onRemove={removeWatched} />
             </>
           )}
         </Box>
