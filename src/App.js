@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Stars from "./Stars";
 
 const tempWatchedData = [
   {
@@ -145,6 +146,9 @@ function MovieDetails({ id, onBack }) {
           {/* <p>{avgRating}</p> */}
 
           <section>
+            <div className="rating">
+              <Stars />
+            </div>
             {/* <div className="rating">
               {!isWatched ? (
                 <>
