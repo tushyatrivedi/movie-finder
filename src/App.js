@@ -48,7 +48,7 @@ const tempWatchedData = [
 ];
 
 const average = (arr) =>
-  arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
+  arr.length === 0 ? 0 : arr.reduce((acc, cur) => acc + cur / arr.length, 0);
 
 function Navbar({ movies }) {
   const [query, setQuery] = useState("");
@@ -173,16 +173,31 @@ export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(tempWatchedData);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState(null); // use null instead of ""
+
   useEffect(() => {
     async function getMovies() {
-      let response = await fetch(`http://www.omdbapi.com/?apikey=d36b3136
-&s='interstellar'`);
-      let data = await response.json();
-      setMovies(data.Search);
-      setIsLoading(false);
-      return () => {
-        setMovies([]);
-      };
+      try {
+        const response = await fetch(
+          "https://www.omdbapi.com/?apikey=d36b3136&s=fggg",
+        );
+
+        if (!response.ok)
+          throw new Error("Error occurred while fetching data!");
+
+        const data = await response.json();
+        console.log(data);
+        if (data.Error === "Movie not found!")
+          throw new Error("Movie not found!");
+
+        setIsLoading(false);
+        setMovies(data.Search);
+      } catch (err) {
+        console.log(err);
+        setErrorMsg(err.message); // always store a string
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     getMovies();
@@ -192,7 +207,11 @@ export default function App() {
     <>
       <Navbar movies={movies} />
       <main className="main">
-        <Box>{isLoading ? <Loading /> : <MovieList movies={movies} />}</Box>
+        <Box>
+          {errorMsg && <ErrorMessage message={errorMsg} />}
+          {isLoading && <Loading />}
+          {!isLoading && <MovieList movies={movies} />}
+        </Box>
         <Box>
           <WatchSummary watched={watched} />
           <WatchedList watched={watched} />
@@ -208,4 +227,8 @@ function Loading() {
       <p>Loading...</p>
     </div>
   );
+}
+
+function ErrorMessage({ message }) {
+  return <p className="error">{message}</p>;
 }
