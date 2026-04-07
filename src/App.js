@@ -179,7 +179,7 @@ export default function App() {
     async function getMovies() {
       try {
         const response = await fetch(
-          "https://www.omdbapi.com/?apikey=d36b3136&s=fggg",
+          "https://www.omdbapi.com/?apikey=d36b3136&s=inception",
         );
 
         if (!response.ok)
