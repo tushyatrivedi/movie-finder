@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Stars from "./Stars";
+import Button from "@mui/material/Button";
 
 const tempWatchedData = [
   {
@@ -89,10 +90,13 @@ function MovieList({ movies, onSelect }) {
   );
 }
 
-function MovieDetails({ id, onBack }) {
+function MovieDetails({ id, onBack, onAdd }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [rating, setRating] = useState(0);
+
   const {
+    imdbID,
     Title: title,
     Year: year,
     Poster: poster,
@@ -147,7 +151,21 @@ function MovieDetails({ id, onBack }) {
 
           <section>
             <div className="rating">
-              <Stars />
+              <Stars rating={rating} setRating={setRating} />
+              {rating > 0 && (
+                <Button
+                  onClick={() => {
+                    console.log(
+                      `Inside button add handler with ${movie.Title}`,
+                    );
+                    onAdd({ ...movie, userRating: rating });
+                    onBack();
+                  }}
+                  variant="contained"
+                >
+                  Add to List
+                </Button>
+              )}
             </div>
             {/* <div className="rating">
               {!isWatched ? (
@@ -253,6 +271,21 @@ export default function App() {
     setSelectedId((prev) => (prev === id ? null : id));
   }
 
+  function handleAdd(movie) {
+    console.log(movie);
+    console.log(`poster: ${movie.Poster}`);
+    if (watched.includes((x) => x.imdbID === movie.imdbID)) {
+      return;
+    }
+
+    setWatched([
+      ...watched,
+      {
+        ...movie,
+      },
+    ]);
+  }
+
   useEffect(() => {
     let ignore = false;
     async function getMovies() {
@@ -304,7 +337,11 @@ export default function App() {
         </Box>
         <Box>
           {selectedId ? (
-            <MovieDetails id={selectedId} onBack={handleBackClick} />
+            <MovieDetails
+              id={selectedId}
+              onBack={handleBackClick}
+              onAdd={handleAdd}
+            />
           ) : (
             <>
               {" "}

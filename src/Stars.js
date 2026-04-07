@@ -1,8 +1,8 @@
 import Rating from "@mui/material/Rating";
+
 import { useState } from "react";
 
-function Stars() {
-  const [rating, setRating] = useState(0);
+function Stars({ rating, setRating }) {
   const [hoverRating, setHoverRating] = useState(-1);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
