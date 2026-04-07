@@ -2,29 +2,6 @@ import { useState, useEffect } from "react";
 import Stars from "./Stars";
 import Button from "@mui/material/Button";
 
-const tempWatchedData = [
-  {
-    imdbID: "tt1375666",
-    Title: "Inception",
-    Year: "2010",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
-    runtime: 148,
-    imdbRating: 8.8,
-    userRating: 10,
-  },
-  {
-    imdbID: "tt0088763",
-    Title: "Back to the Future",
-    Year: "1985",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
-    runtime: 116,
-    imdbRating: 8.5,
-    userRating: 9,
-  },
-];
-
 const average = (arr) =>
   arr.length === 0 ? 0 : arr.reduce((acc, cur) => acc + cur / arr.length, 0);
 
@@ -90,24 +67,13 @@ function MovieList({ movies, onSelect }) {
   );
 }
 
-function MovieDetails({ id, onBack, onAdd }) {
+function MovieDetails({ id, onBack, onAdd, watched }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [rating, setRating] = useState(0);
 
-  const {
-    imdbID,
-    Title: title,
-    Year: year,
-    Poster: poster,
-    Runtime: runtime,
-    imdbRating,
-    Plot: plot,
-    Released: released,
-    Actors: actors,
-    Director: director,
-    Genre: genre,
-  } = movie;
+  const isWatched = watched.some((x) => x.imdbID === id);
+  const watchedMovie = watched.find((x) => x.imdbID === id);
 
   useEffect(() => {
     async function getMovie() {
@@ -133,65 +99,54 @@ function MovieDetails({ id, onBack, onAdd }) {
             <button className="btn-back" onClick={onBack}>
               &larr;
             </button>
-            <img src={poster} alt={`Poster of ${movie} movie`} />
+            <img src={movie.Poster} alt={`Poster of ${movie} movie`} />
             <div className="details-overview">
-              <h2>{title}</h2>
+              <h2>{movie.Title}</h2>
               <p>
-                {released} &bull; {runtime}
+                {movie.Released} &bull; {movie.Runtime}
               </p>
-              <p>{genre}</p>
+              <p>{movie.Genre}</p>
               <p>
                 <span>⭐️</span>
-                {imdbRating} IMDb rating
+                {movie.imdbRating} IMDb rating
               </p>
             </div>
           </header>
 
-          {/* <p>{avgRating}</p> */}
-
           <section>
             <div className="rating">
-              <Stars rating={rating} setRating={setRating} />
-              {rating > 0 && (
-                <Button
-                  onClick={() => {
-                    console.log(
-                      `Inside button add handler with ${movie.Title}`,
-                    );
-                    onAdd({ ...movie, userRating: rating });
-                    onBack();
-                  }}
-                  variant="contained"
-                >
-                  Add to List
-                </Button>
-              )}
-            </div>
-            {/* <div className="rating">
               {!isWatched ? (
                 <>
-                  <StarRating
-                    maxRating={10}
-                    size={24}
-                    onSetRating={setUserRating}
-                  />
-                  {userRating > 0 && (
-                    <button className="btn-add" onClick={handleAdd}>
-                      + Add to list
-                    </button>
+                  <Stars rating={rating} setRating={setRating} />
+                  {rating > 0 && (
+                    <Button
+                      onClick={() => {
+                        console.log(
+                          `Inside button add handler with ${movie.Title}`,
+                        );
+                        onAdd({ ...movie, userRating: rating });
+                        onBack();
+                      }}
+                      variant="contained"
+                    >
+                      Add to List
+                    </Button>
                   )}
                 </>
               ) : (
                 <p>
-                  You rated with movie {watchedUserRating} <span>⭐️</span>
+                  You rated with movie{" "}
+                  {watchedMovie !== "undefined" && watchedMovie.userRating}{" "}
+                  <span>⭐️</span>
                 </p>
               )}
-            </div> */}
+            </div>
+
             <p>
-              <em>{plot}</em>
+              <em>{movie.Plot}</em>
             </p>
-            <p>Starring {actors}</p>
-            <p>Directed by {director}</p>
+            <p>Starring {movie.Actors}</p>
+            <p>Directed by {movie.Director}</p>
           </section>
         </>
       )}
@@ -217,7 +172,7 @@ function WatchedList({ watched }) {
             </p>
             <p>
               <span>⏳</span>
-              <span>{movie.runtime} min</span>
+              <span>{movie.Runtime.split(" ")[0]} min</span>
             </p>
           </div>
         </li>
@@ -227,9 +182,15 @@ function WatchedList({ watched }) {
 }
 
 function WatchSummary({ watched }) {
-  const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
-  const avgUserRating = average(watched.map((movie) => movie.userRating));
-  const avgRuntime = average(watched.map((movie) => movie.runtime));
+  const avgImdbRating = average(
+    watched.map((movie) => movie.imdbRating),
+  ).toFixed(2);
+  const avgUserRating = average(
+    watched.map((movie) => movie.userRating),
+  ).toFixed(2);
+  const avgRuntime = average(
+    watched.map((movie) => Number(movie.Runtime.split(" ")[0])),
+  ).toFixed(2);
   return (
     <div className="summary">
       <h2>Movies you watched</h2>
@@ -257,7 +218,7 @@ function WatchSummary({ watched }) {
 
 export default function App() {
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null); // use null instead of ""
   const [query, setQuery] = useState("");
@@ -274,7 +235,8 @@ export default function App() {
   function handleAdd(movie) {
     console.log(movie);
     console.log(`poster: ${movie.Poster}`);
-    if (watched.includes((x) => x.imdbID === movie.imdbID)) {
+    if (watched.some((x) => x.imdbID === movie.imdbID)) {
+      console.log(`already contains ${movie.Title}`);
       return;
     }
 
@@ -338,6 +300,7 @@ export default function App() {
         <Box>
           {selectedId ? (
             <MovieDetails
+              watched={watched}
               id={selectedId}
               onBack={handleBackClick}
               onAdd={handleAdd}
