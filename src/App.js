@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const tempMovieData = [
   {
@@ -170,21 +170,42 @@ function WatchSummary({ watched }) {
 }
 
 export default function App() {
-  const [movies, setMovies] = useState(tempMovieData);
+  const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(tempWatchedData);
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    async function getMovies() {
+      let response = await fetch(`http://www.omdbapi.com/?apikey=d36b3136
+&s='interstellar'`);
+      let data = await response.json();
+      setMovies(data.Search);
+      setIsLoading(false);
+      return () => {
+        setMovies([]);
+      };
+    }
+
+    getMovies();
+  }, []);
 
   return (
     <>
       <Navbar movies={movies} />
       <main className="main">
-        <Box>
-          <MovieList movies={movies} />
-        </Box>
+        <Box>{isLoading ? <Loading /> : <MovieList movies={movies} />}</Box>
         <Box>
           <WatchSummary watched={watched} />
           <WatchedList watched={watched} />
         </Box>
       </main>
     </>
+  );
+}
+
+function Loading() {
+  return (
+    <div className="loader">
+      <p>Loading...</p>
+    </div>
   );
 }
