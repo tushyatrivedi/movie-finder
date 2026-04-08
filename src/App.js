@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useMovies } from "./useMovies";
 import Stars from "./Stars";
 import Button from "@mui/material/Button";
 
@@ -261,7 +262,6 @@ function WatchSummary({ watched }) {
 }
 
 export default function App() {
-  const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(function () {
     let list = localStorage.getItem("watchList");
     if (list) {
@@ -270,10 +270,11 @@ export default function App() {
       return [];
     }
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(null); // use null instead of ""
+  // use null instead of ""
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+
+  const [movies, errorMsg, isLoading] = useMovies(query);
 
   useEffect(() => {
     localStorage.setItem("watchList", JSON.stringify(watched));
@@ -307,46 +308,6 @@ export default function App() {
     let list = watched.filter((x) => x.imdbID !== id);
     setWatched(list);
   }
-
-  useEffect(() => {
-    let ignore = false;
-    async function getMovies() {
-      try {
-        setIsLoading(true);
-        setErrorMsg("");
-
-        const response = await fetch(
-          `https://www.omdbapi.com/?apikey=d36b3136&s=${query}`,
-        );
-        if (!ignore) {
-          if (!response.ok)
-            throw new Error("Error occurred while fetching data!");
-
-          const data = await response.json();
-          console.log(data);
-          if (data.Response === "False") throw new Error(data.Error);
-
-          setIsLoading(false);
-          setMovies(data.Search);
-        }
-      } catch (err) {
-        console.log(err);
-        setErrorMsg(err.message); // always store a string
-        setMovies([]); //after getting error, clear previous list
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    if (query.length < 3) {
-      setMovies([]);
-      setErrorMsg("");
-      return;
-    }
-    getMovies();
-    return () => {
-      ignore = true;
-    };
-  }, [query]);
 
   return (
     <>
