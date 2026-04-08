@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useMovies } from "./useMovies";
+import { useLocalStorage } from "./useLocalStorage";
 import Stars from "./Stars";
 import Button from "@mui/material/Button";
 
@@ -262,23 +263,13 @@ function WatchSummary({ watched }) {
 }
 
 export default function App() {
-  const [watched, setWatched] = useState(function () {
-    let list = localStorage.getItem("watchList");
-    if (list) {
-      return JSON.parse(list);
-    } else {
-      return [];
-    }
-  });
   // use null instead of ""
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
   const [movies, errorMsg, isLoading] = useMovies(query);
 
-  useEffect(() => {
-    localStorage.setItem("watchList", JSON.stringify(watched));
-  }, [watched]);
+  const [watched, setWatched] = useLocalStorage();
 
   function handleBackClick() {
     setSelectedId(null);
