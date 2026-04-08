@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Stars from "./Stars";
 import Button from "@mui/material/Button";
 
@@ -6,10 +6,27 @@ const average = (arr) =>
   arr.length === 0 ? 0 : arr.reduce((acc, cur) => acc + cur / arr.length, 0);
 
 function Navbar({ count, query, onSearch }) {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current.focus();
+    function focusInput(e) {
+      if (e.code === "Enter") {
+        inputRef.current.focus();
+      }
+    }
+    document.addEventListener("keydown", focusInput);
+
+    return () => {
+      document.removeEventListener("keydown", focusInput);
+    };
+  }, []);
+
   return (
     <nav className="nav-bar">
       <Logo />
       <input
+        ref={inputRef}
         className="search"
         type="text"
         placeholder="Search movies..."
