@@ -27,7 +27,7 @@ function Logo() {
   return (
     <div className="logo">
       <span role="img">🍿</span>
-      <h1>usePopcorn</h1>
+      <h1>Movie Finder</h1>
     </div>
   );
 }
@@ -71,6 +71,25 @@ function MovieDetails({ id, onBack, onAdd, watched }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [rating, setRating] = useState(0);
+
+  useEffect(() => {
+    let handleEscape = (e) => {
+      if (e.code === "Escape") onBack();
+      console.log("closing");
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [onBack]);
+
+  useEffect(() => {
+    document.title = `Movie | ${movie.Title}`;
+    console.log(movie.Title);
+    return () => {
+      document.title = "Movie Finder app";
+    };
+  }, [movie.Title]);
 
   const isWatched = watched.some((x) => x.imdbID === id);
   const watchedMovie = watched.find((x) => x.imdbID === id);
