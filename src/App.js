@@ -245,11 +245,22 @@ function WatchSummary({ watched }) {
 
 export default function App() {
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
+  const [watched, setWatched] = useState(function () {
+    let list = localStorage.getItem("watchList");
+    if (list) {
+      return JSON.parse(list);
+    } else {
+      return [];
+    }
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null); // use null instead of ""
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem("watchList", JSON.stringify(watched));
+  }, [watched]);
 
   function handleBackClick() {
     setSelectedId(null);
